@@ -52,6 +52,11 @@ class ERA5(Dataset):
                 dir_var = os.path.join(data_dir, var)
                 ps = glob.glob(os.path.join(dir_var, f'*{year}*.nc'))
                 xr_data = xr.open_mfdataset(ps, combine='by_coords')
+                lc = xr_data.coords["lon"]
+                la = xr_data.coords["lat"]
+                xr_data = xr_data.loc[
+                    dict(lon=lc[(lc > 190) & (lc < 310)], lat=la[(la > 10) & (la < 75)])
+                ]
                 xr_data = xr_data[NAME_TO_VAR[var]]
                 # np_data = xr_data.to_numpy()
                 if len(xr_data.shape) == 3: # 8760, 32, 64
