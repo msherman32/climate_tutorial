@@ -42,7 +42,7 @@ class DataModule(LightningDataModule):
             raise NotImplementedError("High-resolution data has to be provided for downscaling")
             
         task_string = "Forecasting" if task == "forecasting" else "Downscaling"
-        caller = eval(f"{dataset.upper()}{task_string}")
+        caller = eval(f"{dataset.upper()}{task_string}Custom")
         
         train_years = range(train_start_year, val_start_year)
         self.train_dataset = caller(root_dir, root_highres_dir, in_vars, out_vars, pred_range.hours(), train_years, subsample.hours(), "train")
