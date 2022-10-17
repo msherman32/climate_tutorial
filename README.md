@@ -18,3 +18,7 @@ Please refer to this [notebook]().
 
 ## Licensing ⚠️
 This package is free and open-source under the MIT License.
+
+```bash
+.\venv\Scripts\activate.bat
+```

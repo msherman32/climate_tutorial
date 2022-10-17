@@ -3,3 +3,4 @@ timm
 wandb
 cdsapi
 pytorch-lightning
+xarray==0.19

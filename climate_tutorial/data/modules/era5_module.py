@@ -131,6 +131,60 @@ class ERA5Forecasting(ERA5):
     def __len__(self):
         return len(self.inp_data)
 
+class ERA5ForecastingCustom(ERA5):
+    def __init__(self, root_dir, root_highres_dir, in_vars, out_vars, pred_range, years, subsample=1, split='train'):
+        print (f'Creating {split} dataset')
+        super().__init__(root_dir, root_highres_dir, in_vars, years, split)
+        
+        self.in_vars = in_vars
+        self.out_vars = out_vars
+        self.pred_range = pred_range
+
+        inp_data = xr.concat([self.data_dict[k] for k in in_vars], dim='level')
+        out_data = xr.concat([self.data_dict[k] for k in out_vars], dim='level')
+
+        self.inp_data = inp_data[0:-pred_range:subsample].to_numpy().astype(np.float32)
+        self.out_data = out_data[pred_range::subsample].to_numpy().astype(np.float32)
+
+        assert len(self.inp_data) == len(self.out_data)
+
+        self.downscale_ratio = 1
+
+        if split == 'train':
+            self.inp_transform = self.get_normalize(self.inp_data)
+            self.out_transform = self.get_normalize(self.out_data)
+        else:
+            self.inp_transform = None
+            self.out_transform = None
+
+        self.time = self.data_dict[in_vars[0]].time.to_numpy()[:-pred_range:subsample].copy()
+        self.inp_lon = self.data_dict[in_vars[0]].lon.to_numpy().copy()
+        self.inp_lat = self.data_dict[in_vars[0]].lat.to_numpy().copy()
+        self.out_lon = self.data_dict[out_vars[0]].lon.to_numpy().copy()
+        self.out_lat = self.data_dict[out_vars[0]].lat.to_numpy().copy()
+
+        del self.data_dict
+
+    def get_normalize(self, data):
+        mean = np.mean(data, axis=(0, 2, 3))
+        std = np.std(data, axis=(0, 2, 3))
+        return transforms.Normalize(mean, std)
+
+    def set_normalize(self, inp_normalize, out_normalize): # for val and test
+        self.inp_transform = inp_normalize
+        self.out_transform = out_normalize
+
+    def get_climatology(self):
+        return torch.from_numpy(self.out_data.mean(axis=0))
+
+    def __getitem__(self, index):
+        inp = torch.from_numpy(self.inp_data[index])
+        out = torch.from_numpy(self.out_data[index])
+        return self.inp_transform(inp), self.out_transform(out), self.in_vars, self.out_vars
+
+    def __len__(self):
+        return len(self.inp_data)
+
 class ERA5Downscaling(ERA5):
     def __init__(self, root_dir, root_highres_dir, in_vars, out_vars, pred_range, years, subsample=1, split='train'):
         print (f'Creating {split} dataset')
