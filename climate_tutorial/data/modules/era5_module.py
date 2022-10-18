@@ -30,12 +30,16 @@ NAME_TO_VAR = {
 VAR_TO_NAME = {v: k for k, v in NAME_TO_VAR.items()}
 
 class ERA5(Dataset):
-    def __init__(self, root_dir, root_highres_dir, variables, years, split = 'train'):
+    def __init__(self, root_dir, root_highres_dir, variables, years, min_lat, max_lat, min_lon, max_lon, split = 'train'):
         super().__init__()
         self.root_dir = root_dir
         self.root_highres_dir = root_highres_dir
         self.variables = variables
         self.years = years
+        self.min_lat = min_lat
+        self.max_lat = max_lat
+        self.min_lon = min_lon
+        self.max_lon = max_lon
         self.split = split
 
         self.data_dict = self.load_from_nc(self.root_dir)
@@ -52,12 +56,18 @@ class ERA5(Dataset):
                 dir_var = os.path.join(data_dir, var)
                 ps = glob.glob(os.path.join(dir_var, f'*{year}*.nc'))
                 xr_data = xr.open_mfdataset(ps, combine='by_coords')
+                
+                # Get user specified region:
                 lc = xr_data.coords["lon"]
                 la = xr_data.coords["lat"]
                 xr_data = xr_data.loc[
-                    dict(lon=lc[(lc > 190) & (lc < 310)], lat=la[(la > 10) & (la < 75)])
+                    dict(
+                        lon=lc[(lc >= self.min_lon) & (lc <= self.max_lon)],
+                        lat=la[(la >= self.min_lat) & (la <= self.max_lat)]
+                    )
                 ]
                 xr_data = xr_data[NAME_TO_VAR[var]]
+
                 # np_data = xr_data.to_numpy()
                 if len(xr_data.shape) == 3: # 8760, 32, 64
                     xr_data = xr_data.expand_dims(dim='level', axis=1)
@@ -67,14 +77,21 @@ class ERA5(Dataset):
         
         return data_dict
 
+    # TODO: modify this? It is not using data_dict to get the data per var...
+    # use self.data_highres_dict
     def get_lat_lon(self):
         # lat lon is stored in each of the nc files, just need to load one and extract
-        dir_var = os.path.join(self.root_dir, self.variables[0])
-        year = self.years[0]
-        ps = glob.glob(os.path.join(dir_var, f'*{year}*.nc'))
-        xr_data = xr.open_mfdataset(ps, combine='by_coords')
-        self.lat = xr_data['lat'].to_numpy()
-        self.lon = xr_data['lon'].to_numpy()
+        # dir_var = os.path.join(self.root_dir, self.variables[0])
+        # year = self.years[0]
+        # ps = glob.glob(os.path.join(dir_var, f'*{year}*.nc'))
+        # xr_data = xr.open_mfdataset(ps, combine='by_coords')
+        # self.lat = xr_data['lat'].to_numpy()
+        # self.lon = xr_data['lon'].to_numpy()
+        var = self.variables[0]
+        # self.lat = self.data_highres_dict[var]['lat'].to_numpy() ??
+        self.lat = self.data_dict[var]['lat'].to_numpy()
+        self.lon = self.data_dict[var]['lon'].to_numpy()
+
 
     def __getitem__(self, index):
         pass
@@ -83,9 +100,9 @@ class ERA5(Dataset):
         pass
 
 class ERA5Forecasting(ERA5):
-    def __init__(self, root_dir, root_highres_dir, in_vars, out_vars, pred_range, years, subsample=1, split='train'):
+    def __init__(self, root_dir, root_highres_dir, in_vars, out_vars, pred_range, years, min_lat, max_lat, min_lon, max_lon, subsample=1, split='train'):
         print (f'Creating {split} dataset')
-        super().__init__(root_dir, root_highres_dir, in_vars, years, split)
+        super().__init__(root_dir, root_highres_dir, in_vars, years, min_lat, max_lat, min_lon, max_lon, split)
         
         self.in_vars = in_vars
         self.out_vars = out_vars
@@ -137,9 +154,9 @@ class ERA5Forecasting(ERA5):
         return len(self.inp_data)
 
 class ERA5ForecastingCustom(ERA5):
-    def __init__(self, root_dir, root_highres_dir, in_vars, out_vars, pred_range, years, subsample=1, split='train'):
+    def __init__(self, root_dir, root_highres_dir, in_vars, out_vars, pred_range, years, min_lat, max_lat, min_lon, max_lon, subsample=1, split='train'):
         print (f'Creating {split} dataset')
-        super().__init__(root_dir, root_highres_dir, in_vars, years, split)
+        super().__init__(root_dir, root_highres_dir, in_vars, years, min_lat, max_lat, min_lon, max_lon, split)
         
         self.in_vars = in_vars
         self.out_vars = out_vars
@@ -190,6 +207,7 @@ class ERA5ForecastingCustom(ERA5):
     def __len__(self):
         return len(self.inp_data)
 
+# Ideally we don't need to worry about this downscaler with my code
 class ERA5Downscaling(ERA5):
     def __init__(self, root_dir, root_highres_dir, in_vars, out_vars, pred_range, years, subsample=1, split='train'):
         print (f'Creating {split} dataset')

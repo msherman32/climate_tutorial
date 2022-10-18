@@ -22,3 +22,8 @@ This package is free and open-source under the MIT License.
 ```bash
 .\venv\Scripts\activate.bat
 ```
+
+If Git token expires, create a new one and then:
+```bash
+git remote set-url origin https://msherman32:<your_new_token>@github.com/msherman32/climate_tutorial.git
+```

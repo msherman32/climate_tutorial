@@ -30,6 +30,11 @@ class DataModule(LightningDataModule):
         batch_size = 64,
         num_workers = 0,
         pin_memory = False,
+        specify_range = False,
+        min_lat = -90,
+        max_lat = 90,
+        min_lon = 0,
+        max_lon = 360,
     ):
         super().__init__()
 
@@ -42,17 +47,18 @@ class DataModule(LightningDataModule):
             raise NotImplementedError("High-resolution data has to be provided for downscaling")
             
         task_string = "Forecasting" if task == "forecasting" else "Downscaling"
-        caller = eval(f"{dataset.upper()}{task_string}Custom")
+        custom = "Custom" if specify_range == True else ""
+        caller = eval(f"{dataset.upper()}{task_string}{custom}")
         
         train_years = range(train_start_year, val_start_year)
-        self.train_dataset = caller(root_dir, root_highres_dir, in_vars, out_vars, pred_range.hours(), train_years, subsample.hours(), "train")
+        self.train_dataset = caller(root_dir, root_highres_dir, in_vars, out_vars, pred_range.hours(), train_years, min_lat, max_lat, min_lon, max_lon, subsample.hours(), "train")
 
         val_years = range(val_start_year, test_start_year)
-        self.val_dataset = caller(root_dir, root_highres_dir, in_vars, out_vars, pred_range.hours(), val_years, subsample.hours(), "val")
+        self.val_dataset = caller(root_dir, root_highres_dir, in_vars, out_vars, pred_range.hours(), val_years, min_lat, max_lat, min_lon, max_lon, subsample.hours(), "val")
         self.val_dataset.set_normalize(self.train_dataset.inp_transform, self.train_dataset.out_transform)
 
         test_years = range(test_start_year, end_year + 1)
-        self.test_dataset = caller(root_dir, root_highres_dir, in_vars, out_vars, pred_range.hours(), test_years, subsample.hours(), "test")
+        self.test_dataset = caller(root_dir, root_highres_dir, in_vars, out_vars, pred_range.hours(), test_years, min_lat, max_lat, min_lon, max_lon, subsample.hours(), "test")
         self.test_dataset.set_normalize(self.train_dataset.inp_transform, self.train_dataset.out_transform)
 
     def get_lat_lon(self):
