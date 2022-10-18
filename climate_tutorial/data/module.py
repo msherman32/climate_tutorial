@@ -27,14 +27,14 @@ class DataModule(LightningDataModule):
         root_highres_dir=None,
         pred_range = Hours(6),
         subsample = Hours(1),
-        batch_size = 64,
-        num_workers = 0,
-        pin_memory = False,
         specify_range = False,
         min_lat = -90,
         max_lat = 90,
         min_lon = 0,
         max_lon = 360,
+        batch_size = 64,
+        num_workers = 0,
+        pin_memory = False
     ):
         super().__init__()
 
