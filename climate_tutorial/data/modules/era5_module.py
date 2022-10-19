@@ -30,7 +30,7 @@ NAME_TO_VAR = {
 VAR_TO_NAME = {v: k for k, v in NAME_TO_VAR.items()}
 
 class ERA5(Dataset):
-    def __init__(self, root_dir, root_highres_dir, variables, years, min_lat, max_lat, min_lon, max_lon, split = 'train'):
+    def __init__(self, root_dir, root_highres_dir, variables, years, min_lat, max_lat, min_lon, max_lon, test_lat_start, test_lon_start, split = 'train'):
         super().__init__()
         self.root_dir = root_dir
         self.root_highres_dir = root_highres_dir
@@ -40,6 +40,8 @@ class ERA5(Dataset):
         self.max_lat = max_lat
         self.min_lon = min_lon
         self.max_lon = max_lon
+        self.test_lat_start = test_lat_start
+        self.test_lon_start = test_lon_start
         self.split = split
 
         self.data_dict = self.load_from_nc(self.root_dir)
@@ -57,6 +59,16 @@ class ERA5(Dataset):
                 ps = glob.glob(os.path.join(dir_var, f'*{year}*.nc'))
                 xr_data = xr.open_mfdataset(ps, combine='by_coords')
                 
+                lat_difference = self.max_lat - self.min_lat
+                if self.test_lat_start is not None:
+                    self.min_lat = self.test_lat_start
+                    self.max_lat = self.test_lat_start + lat_difference
+                
+                lon_difference = self.max_lon - self.min_lon
+                if self.test_lon_start is not None:
+                    self.min_lon = self.test_lon_start
+                    self.max_lon = self.test_lon_start + lon_difference
+                    
                 # Get user specified region:
                 lc = xr_data.coords["lon"]
                 la = xr_data.coords["lat"]
@@ -154,9 +166,9 @@ class ERA5Forecasting(ERA5):
         return len(self.inp_data)
 
 class ERA5ForecastingCustom(ERA5):
-    def __init__(self, root_dir, root_highres_dir, in_vars, out_vars, pred_range, years, min_lat, max_lat, min_lon, max_lon, subsample=1, split='train'):
+    def __init__(self, root_dir, root_highres_dir, in_vars, out_vars, pred_range, years, min_lat, max_lat, min_lon, max_lon, test_lat_start, test_lon_start, subsample=1, split='train'):
         print (f'Creating {split} dataset')
-        super().__init__(root_dir, root_highres_dir, in_vars, years, min_lat, max_lat, min_lon, max_lon, split)
+        super().__init__(root_dir, root_highres_dir, in_vars, years, min_lat, max_lat, min_lon, max_lon, test_lat_start, test_lon_start, split)
         
         self.in_vars = in_vars
         self.out_vars = out_vars
