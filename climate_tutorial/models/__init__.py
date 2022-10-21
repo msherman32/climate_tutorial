@@ -2,7 +2,7 @@ from climate_tutorial.models.modules.downscale import DownscaleLitModule
 from .components import *
 from .modules import *
 
-def load_model(name, task, model_kwargs, optim_kwargs, save_folder):
+def load_model(name, task, save_folder, model_kwargs, optim_kwargs):
     if(name == "vit"):
         model_cls = VisionTransformer
     elif(name == "resnet"):
