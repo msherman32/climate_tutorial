@@ -2,7 +2,7 @@ from climate_tutorial.models.modules.downscale import DownscaleLitModule
 from .components import *
 from .modules import *
 
-def load_model(name, task, model_kwargs, optim_kwargs):
+def load_model(name, task, model_kwargs, optim_kwargs, save_folder):
     if(name == "vit"):
         model_cls = VisionTransformer
     elif(name == "resnet"):
@@ -13,7 +13,7 @@ def load_model(name, task, model_kwargs, optim_kwargs):
     model = model_cls(**model_kwargs)
 
     if(task == "forecasting"):
-        module = ForecastLitModule(model, **optim_kwargs)
+        module = ForecastLitModule(model, save_folder, **optim_kwargs)
     elif(task == 'downscaling'):
         module = DownscaleLitModule(model, **optim_kwargs)
     else:

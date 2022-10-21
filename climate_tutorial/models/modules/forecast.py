@@ -23,10 +23,12 @@ class ForecastLitModule(LightningModule):
         max_epochs: int = 30,
         warmup_start_lr: float = 1e-8,
         eta_min: float = 1e-8,
+        save_folder: str = '/content/drive/MyDrive/Climate/saved_modules',
     ):
         super().__init__()
         self.save_hyperparameters(logger=False, ignore=["net"])
         self.net = net
+        self.save_folder=save_folder
         if optimizer == 'adam':
             self.optim_cls = torch.optim.Adam
         elif optimizer == 'adamw':
@@ -180,3 +182,9 @@ class ForecastLitModule(LightningModule):
         )
 
         return {"optimizer": optimizer, "lr_scheduler": lr_scheduler}
+
+    def save_model(self):
+        # self.net._save_to_state_dict()
+        unique_name = f"{self.net.activation}_{self.net.n_blocks}_{self.net.dropout}.pt"
+        path = f"{self.save_folder}/{unique_name}" 
+        torch.save(self.net.state_dict(), path)

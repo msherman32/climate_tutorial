@@ -37,6 +37,9 @@ class ResNet(nn.Module):
             self.activation = nn.LeakyReLU(0.3)
         else:
             raise NotImplementedError(f"Activation {activation} not implemented")
+        
+        self.dropout=dropout
+        self.n_blocks=n_blocks
 
         insize = self.in_channels
         # Project image into feature map
