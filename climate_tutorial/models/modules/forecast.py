@@ -183,7 +183,7 @@ class ForecastLitModule(LightningModule):
 
         return {"optimizer": optimizer, "lr_scheduler": lr_scheduler}
 
-    def save_model(self):
+    def save(self):
         # self.net._save_to_state_dict()
         unique_name = f"{self.net.activation}_{self.net.n_blocks}_{self.net.dropout}.pt"
         path = f"{self.save_folder}/{unique_name}" 
