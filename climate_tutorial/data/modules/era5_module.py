@@ -148,7 +148,14 @@ class ERA5Forecasting(ERA5):
     def get_normalize(self, data):
         mean = np.mean(data, axis=(0, 2, 3))
         std = np.std(data, axis=(0, 2, 3))
-        return transforms.Normalize(mean, std)
+        
+        transform = transforms.Compose([
+        transforms.Normalize(mean, std),
+        transforms.ToPILImage(),
+        transforms.RandomHorizontalFlip(),
+        transforms.ToTensor()
+        ])
+        return transform
 
     def set_normalize(self, inp_normalize, out_normalize): # for val and test
         self.inp_transform = inp_normalize
@@ -161,7 +168,7 @@ class ERA5Forecasting(ERA5):
         inp = torch.from_numpy(self.inp_data[index])
         out = torch.from_numpy(self.out_data[index])
         return self.inp_transform(inp), self.out_transform(out), self.in_vars, self.out_vars
-
+    
     def __len__(self):
         return len(self.inp_data)
 
