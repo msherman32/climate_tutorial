@@ -81,16 +81,16 @@ class ERA5(Dataset):
     # use self.data_highres_dict
     def get_lat_lon(self):
         # lat lon is stored in each of the nc files, just need to load one and extract
-        # dir_var = os.path.join(self.root_dir, self.variables[0])
-        # year = self.years[0]
-        # ps = glob.glob(os.path.join(dir_var, f'*{year}*.nc'))
-        # xr_data = xr.open_mfdataset(ps, combine='by_coords')
-        # self.lat = xr_data['lat'].to_numpy()
-        # self.lon = xr_data['lon'].to_numpy()
-        var = self.variables[0]
-        # self.lat = self.data_highres_dict[var]['lat'].to_numpy() ??
-        self.lat = self.data_dict[var]['lat'].to_numpy()
-        self.lon = self.data_dict[var]['lon'].to_numpy()
+        dir_var = os.path.join(self.root_dir, self.variables[0])
+        year = self.years[0]
+        ps = glob.glob(os.path.join(dir_var, f'*{year}*.nc'))
+        xr_data = xr.open_mfdataset(ps, combine='by_coords')
+        self.lat = xr_data['lat'].to_numpy()
+        self.lon = xr_data['lon'].to_numpy()
+        # var = self.variables[0]
+        # # self.lat = self.data_highres_dict[var]['lat'].to_numpy() ??
+        # self.lat = self.data_dict[var]['lat'].to_numpy()
+        # self.lon = self.data_dict[var]['lon'].to_numpy()
 
 
     def __getitem__(self, index):
