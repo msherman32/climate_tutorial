@@ -22,7 +22,10 @@ class MinMaxRescaleTransformation(torch.nn.Module):
         """
         # TODO: need to floor or round to nearest whole number when forwarding..
         # return self.a + self.b * x + self.c * x ** 2 + self.d * x ** 3
-        return ((x - self.r_min) / (self.r_max - self.r_min))(self.t_max - self.t_min) + self.t_min
+        # return ((x - self.r_min) / (self.r_max - self.r_min))(self.t_max - self.t_min) + self.t_min
+        r_diff = self.r_max - self.r_min
+        t_diff = self.t_max - self.t_min
+        return torch.mul(torch.divide(x - self.r_min, r_diff), t_diff) + self.t_min
 
     # def string(self):
     #     """
