@@ -23,9 +23,17 @@ def load_model(name, task, save_folder, model_kwargs, optim_kwargs):
 
 def set_climatology(model_module, data_module):
     normalization = data_module.get_out_transforms()
-    mean_norm, std_norm = normalization.mean, normalization.std
-    mean_denorm, std_denorm = -mean_norm / std_norm, 1 / std_norm
-    model_module.set_denormalization(mean_denorm, std_denorm)
+    # mean_norm, std_norm = normalization.mean, normalization.std
+    # mean_denorm, std_denorm = -mean_norm / std_norm, 1 / std_norm
+
+    r_min = normalization.t_min
+    r_max = normalization.t_max
+    t_min = normalization.r_min
+    t_max = normalization.r_max
+
+    model_module.set_denormalization(r_min, r_max, t_min, t_max)
+    # model_module.set_denormalization(mean_denorm, std_denorm)
+    
     model_module.set_lat_lon(*data_module.get_lat_lon())
     model_module.set_pred_range(data_module.hparams.pred_range)
     model_module.set_val_climatology(data_module.get_climatology(split = "val"))

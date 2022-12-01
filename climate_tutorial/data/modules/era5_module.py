@@ -8,6 +8,8 @@ from tqdm.notebook import tqdm
 from torch.utils.data import Dataset
 from torchvision.transforms import transforms
 
+from climate_tutorial.models.components import MinMaxRescaleTransformation
+
 NAME_TO_VAR = {
     "2m_temperature": "t2m",
     "10m_u_component_of_wind": "u10",
@@ -200,9 +202,12 @@ class ERA5ForecastingCustom(ERA5):
         del self.data_dict
 
     def get_normalize(self, data):
-        mean = np.mean(data, axis=(0, 2, 3))
-        std = np.std(data, axis=(0, 2, 3))
-        return transforms.Normalize(mean, std)
+        max = np.max(data, axis=(0, 2, 3))
+        min = np.min(data, axis=(0, 2, 3))
+        return MinMaxRescaleTransformation(max, min, 0, 255)
+        # mean = np.mean(data, axis=(0, 2, 3))
+        # std = np.std(data, axis=(0, 2, 3))
+        # return transforms.Normalize(mean, std)
 
     def set_normalize(self, inp_normalize, out_normalize): # for val and test
         self.inp_transform = inp_normalize

@@ -3,6 +3,7 @@ from typing import Any
 import torch
 from pytorch_lightning import LightningModule
 from torchvision.transforms import transforms
+from climate_tutorial.models.components import MinMaxRescaleTransformation 
 
 from .utils.lr_scheduler import LinearWarmupCosineAnnealingLR
 from .utils.metrics import (
@@ -40,8 +41,10 @@ class ForecastLitModule(LightningModule):
         with torch.no_grad():
             return self.net.predict(x)
 
-    def set_denormalization(self, mean, std):
-        self.denormalization = transforms.Normalize(mean, std)
+    # def set_denormalization(self, mean, std):
+    def set_denormalization(self, r_min, r_max, t_min, t_max):
+        # self.denormalization = transforms.Normalize(mean, std)
+        self.denormalization = MinMaxRescaleTransformation(r_min, r_max, t_min, t_max)
 
     def set_lat_lon(self, lat, lon):
         self.lat = lat
