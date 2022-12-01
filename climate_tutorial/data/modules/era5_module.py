@@ -202,9 +202,9 @@ class ERA5ForecastingCustom(ERA5):
         del self.data_dict
 
     def get_normalize(self, data):
-        max = np.max(data, axis=(0, 2, 3))
         min = np.min(data, axis=(0, 2, 3))
-        return MinMaxRescaleTransformation(max, min, 0, 255)
+        max = np.max(data, axis=(0, 2, 3))
+        return MinMaxRescaleTransformation(min, max, 0, 255)
         # mean = np.mean(data, axis=(0, 2, 3))
         # std = np.std(data, axis=(0, 2, 3))
         # return transforms.Normalize(mean, std)
