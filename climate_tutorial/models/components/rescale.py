@@ -46,14 +46,13 @@ class MinMaxRescaleTransformation(torch.nn.Module):
 
         #  torch.divide(x - self.r_min, r_diff)
         t_diff = self.t_max - self.t_min
-        t_diff = torch.from_numpy(t_diff) # length 3 array
         t_diff_one = torch.full(correct_shape, t_diff)
         t_diff_two = torch.full(correct_shape, t_diff)
         t_diff_three = torch.full(correct_shape, t_diff)
 
         t_diff = [t_diff_one, t_diff_two, t_diff_three]
         t_diff = torch.stack(t_diff)
-        z = torch.mul(y,t_diff) + self.t_min
+        z = torch.mul(y, t_diff) + self.t_min
 
         return z
         # TODO:
